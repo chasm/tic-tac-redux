@@ -1,0 +1,1 @@
+module.exports = require("npm:babel-generator@6.3.15/lib/index");

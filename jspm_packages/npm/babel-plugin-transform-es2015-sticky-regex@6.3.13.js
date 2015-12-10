@@ -1,0 +1,1 @@
+module.exports = require("npm:babel-plugin-transform-es2015-sticky-regex@6.3.13/lib/index");

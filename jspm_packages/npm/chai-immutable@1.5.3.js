@@ -1,0 +1,1 @@
+module.exports = require("npm:chai-immutable@1.5.3/chai-immutable");

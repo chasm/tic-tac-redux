@@ -1,0 +1,1 @@
+module.exports = require("npm:globals@8.14.0/index");

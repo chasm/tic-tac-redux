@@ -1,0 +1,1 @@
+module.exports = require("npm:babel-helper-hoist-variables@6.3.13/lib/index");

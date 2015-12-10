@@ -1,0 +1,1 @@
+module.exports = require("npm:babel-plugin-syntax-export-extensions@6.3.13/lib/index");
