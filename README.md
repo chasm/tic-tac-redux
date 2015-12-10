@@ -22,6 +22,8 @@ jspm install
 jspm-server
 ```
 
+## The big review!
+
 OK, we should be ready to go. Let's do a quick review.
 
 In the `index.html` file we see the following script elements:
@@ -231,6 +233,8 @@ player === 'x'
 memo === [false, false, false, false, false, false, false, false, false]
 
 Returns [false, false, false, false, 'x', false, false, false, false]
+                                      ^
+                                      4th square is now x
 ```
 
 Got it? This repeats with 3, 0, etc. until the history array is exhausted. If our history array was `[4, 3, 0, 8, 2, 1, 6]`, then the output of `getBoard` would be:
@@ -373,6 +377,8 @@ Then we use the status of `this.props.win` (true or undefined) to set `winner` t
 <div class="x">x</div>
 ```
 
+(We'll use CSS to make the x big, bold, uppercase, and red.)
+
 Or, if the game was won by x and this is one of the winning squares,
 
 ```jsx
@@ -425,5 +431,247 @@ And our HTML output in the DOM looks like this:
   </div>
 </div>
 ```
+
+## What about the tests?
+
+We're also doing some pretty clever front-end testing using mocha and chai. If you check in the `test/tests.js` file, you'll see these imports:
+
+```js
+// in test/tests.js
+import React from 'react'
+import TestUtils from 'react-addons-test-utils'
+
+import { expect } from 'chai'
+
+import App from '../app/components/app.jsx!'
+import Game from '../app/components/game.jsx!'
+import Square from '../app/components/square.jsx!'
+
+import { forEach } from 'ramda'
+```
+
+We need React, of course. And the [TestUtils](https://facebook.github.io/react/docs/test-utils.html) provide a long list of very helpful functions for testing React components, the most powerful of which is probably `Simulate`.
+
+Next, we import those utility functions we need:
+
+```js
+// in test/tests.js
+const {
+  isCompositeComponent,
+  renderIntoDocument,
+  scryRenderedDOMComponentsWithClass,
+  scryRenderedDOMComponentsWithTag,
+  Simulate
+} = TestUtils
+```
+
+To see what these do, refer to the [TestUtils](https://facebook.github.io/react/docs/test-utils.html) documentation. I won't repeat it here. Gotta love functions marked as "scary"!
+
+For the App, we're simply testing that it exists and can be instantiated:
+
+```js
+// in test/tests.js
+describe("App", () => {
+
+  it("is a composite component", () => {
+    const app = renderIntoDocument(<App/>)
+
+    expect(isCompositeComponent(app)).to.equal(true)
+  })
+})
+```
+
+This just renders the App component into the DOM and then checks that it exists. We have similar tests for Game and Square, so we'll skip those.
+
+Remember, these are front-end tests, so to run them, start up `jspm-server` and point your browser to [http://127.0.0.1:8080/test.html](http://127.0.0.1:8080/test.html).
+
+Next, we test the Game. There's a lot too it.
+
+```js
+// in test/tests.js
+describe("Game", () => {
+  let game
+
+  beforeEach(() => {
+    game = renderIntoDocument(<Game/>)
+  })
+
+  // more code . . .
+})
+```
+
+First, we use `beforeEach` to render a Game component anew for each test. We need to define `game` outside the `beforeEach` method so it's scoped to the entire `describe` block.
+
+Next we check if the Game has a board:
+
+```js
+// in test/tests.js
+it("has a board", () => {
+  expect(scryRenderedDOMComponentsWithClass(game, 'board').length).to.equal(1)
+})
+```
+
+The `scryRenderedDOMComponentsWithClass` function takes the Game component and a class name and returns an array of any elements inside that component with that class name. Remember, it returns an *array*, even if it finds only one element (or none).
+
+Then we check that a Game starts with an empty history:
+
+```js
+// in test/tests.js
+it("begins with an empty history", () => {
+  expect(game.state.history).to.eql([])
+})
+```
+
+OK, cool. But what about the board? The next block will work with the board, so we'll put it in its own describe block and we'll grab the board from the game before each test:
+
+```js
+// in test/tests.js
+describe("board", () => {
+  let board
+
+  beforeEach(() => {
+    board = scryRenderedDOMComponentsWithClass(game, 'board')[0]
+  })
+
+  // more code . . .
+})
+```
+
+Now we can start checking. First let's make sure it has *nine* (9) squares, no more, no fewer. And that we can't rewrite the squares (this one's a gimme as we only attach the click handler if the square is unplayed):
+
+```js
+// in test/tests.js
+it("has nine squares", () => {
+  expect(board.childNodes.length).to.equal(9)
+})
+
+it("prevents rewriting squares", () => {
+  let center = board.childNodes[4]
+
+  Simulate.click(center)
+  Simulate.click(center)
+
+  expect(center.innerHTML).to.equal('x')
+})
+```
+
+This first test should be obvious. The second one, too. We grab the center square, then use `Simulate` to click it twice. It should not change from it's initial value. (This is the first move, so we expect that to be 'x'. I guess this tests that X goes first as well. Two for one!)
+
+Does it track those moves in our game history?
+
+```js
+// in test/tests.js
+it("tracks moves in game history", () => {
+  const board = scryRenderedDOMComponentsWithClass(game, 'board')[0]
+
+  const center = board.childNodes[4]
+  const midLeft = board.childNodes[3]
+  const topLeft = board.childNodes[0]
+
+  Simulate.click(center)
+  Simulate.click(midLeft)
+  Simulate.click(topLeft)
+
+  expect(game.state.history).to.eql([4,3,0])
+})
+```
+
+Let's grab that board again. We'll grab the center, middle left, and top left squares&mdash;that's squares 4, 3, and 0, in that order. Then we'll use `Simulate` to click on them and we'll check that our history records the correct moves in the correct order. This tests our system from the Squares through the `handleClick` methods and back to the Game's `setState` method. Nice.
+
+But how do we know it's not playing all those moves as the same player? Or screwing up the order? Let's check that it's alternating players:
+
+```js
+// in test/tests.js
+it("can alternate moves, X first", () => {
+  let board = scryRenderedDOMComponentsWithClass(game, 'board')[0]
+
+  let center = board.childNodes[4]
+  let midLeft = board.childNodes[3]
+  let topLeft = board.childNodes[0]
+
+  Simulate.click(center)
+  Simulate.click(midLeft)
+  Simulate.click(topLeft)
+
+  expect(center.innerHTML).to.equal('x')
+  expect(midLeft.innerHTML).to.equal('o')
+  expect(topLeft.innerHTML).to.equal('x')
+})
+```
+
+Finally (for the Game), let's check if it recognizes a win and prevents further moves after the win:
+
+```js
+// in test/tests.js
+it("recognizes a win", () => {
+  const moves = [4, 3, 0, 8, 2, 1, 6] // win
+
+  forEach((idx) => Simulate.click(board.childNodes[idx]), moves)
+
+  expect(scryRenderedDOMComponentsWithClass(game, 'board won').length).to.equal(1)
+})
+
+it("prevents further play after a win", () => {
+  const lastSquare = board.childNodes[7]
+  const moves = [4, 3, 0, 8, 2, 1, 6] // win
+
+  forEach((idx) => Simulate.click(board.childNodes[idx]), moves)
+
+  Simulate.click(lastSquare)
+
+  expect(lastSquare.innerHTML).to.be.empty
+})
+```
+
+After playing a known win out, we check that the board is marked "won". Then we try to move again in a remaining empty square, and check that the square remains uplayed.
+
+Finally, we test our Square component:
+
+```js
+// in test/tests.js
+describe("Square", () => {
+  let square
+  const player = 'x'
+
+  describe("when empty", () => {
+    before(() => {
+      square = renderIntoDocument(<Square/>)
+    })
+
+    it("is a composite component", () => {
+      expect(isCompositeComponent(square)).to.equal(true)
+    })
+
+    it("calls a callback when clicked", () => {
+      const cb = (event) => console.log("Clickeroonie!")
+      square = renderIntoDocument(<Square clickCb={cb}/>)
+
+      Simulate.click(square)
+    })
+  })
+
+  describe("after play", () => {
+    beforeEach(() => {
+      square = renderIntoDocument(<Square player={player}/>)
+    })
+
+    it("has the correct content", () => {
+      const div = scryRenderedDOMComponentsWithTag(square, 'div')[0]
+
+      expect(div && div.innerHTML).to.equal(player)
+    })
+
+    it("applies the player's style", () => {
+      expect(scryRenderedDOMComponentsWithClass(square, 'x')).not.to.be.empty
+    })
+  })
+})
+```
+
+We test that an empty square calls the callback when clicked (maybe superfluous as all the clicks on the Game board have already thoroughly tested this). Then we take a played square and make sure that it put that player's mark in the div's innerHTML, and that it also used it as a class to apply the player's style.
+
+And we're good to go.
+
+## OK, ready for the new stuff?
 
 
