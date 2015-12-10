@@ -674,4 +674,69 @@ And we're good to go.
 
 ## OK, ready for the new stuff?
 
+Let's clean things up a bit.
+
+### `propTypes` and `defaultProps`
+
+The first thing we can do is spiff up our components and make them a bit more robust by declaring the types of our props and setting default values for them. We do this with `propTypes` and `defaultProps`. Go figure.
+
+With the new JavaScript 2015 syntax, these are nothing more than properties of the components `constructor`, so we can set them right on the component, e.g.:
+
+```jsx
+Square.propTypes = { win: React.PropTypes.bool }
+Square.defaultProps = { win: false }
+```
+
+The available PropTypes include `string`, `number`, `object`, `func`, `bool`, and `any`. And many more. You can see a full list here: [PropTypes](https://facebook.github.io/react/docs/reusable-components.html#prop-validation). They can also be optional or required (default is to optional).
+
+Right now we're using a double-bang to convert an undefined into a false value for `this.props.win`. If we set the default to false, we wouldn't need that hack.
+
+We're using the player to determine if the square has been played. Maybe this isn't the best method&mdash;relying on dynamic types and "truthiness"&mdash;but we'll leave it for now. As the value could be a string or a boolean, then, we'd have to choose `any`. Hmm. Hard choice.
+
+This:
+
+```js
+// in app/components.square.jsx
+Square.propTypes = {
+  win: React.PropTypes.bool,
+  player: React.PropTypes.any,
+  clickCb: React.PropTypes.func
+}
+
+Square.defaultProps = {
+  win: false,
+  player: false
+}
+```
+
+Or this?
+
+```js
+// in app/components.square.jsx
+Square.propTypes = {
+  win: React.PropTypes.bool,
+  player: React.PropTypes.string,
+  clickCb: React.PropTypes.func
+}
+
+Square.defaultProps = {
+  win: false
+}
+```
+
+I think I'm going to go with the latter. I'm more comfortable working with an undefined player and specifying the type as `string` than with going wide open on the type.
+
+Another benefit of this is that we can clearly see what props we're expecting.
+
+We could also require a prop by chaining `isRequired`. We could get away with that on our `win` prop as we're supplying a default value, so it will always be present, but what's the point? It makes more sense to use `isRequired` on props that we can't provide a default for, but which we really need the prop type to be set. So doing this:
+
+```jsx
+win: React.PropTypes.bool.isRequired
+```
+
+Probably isn't worth it here.
+
+Game and App don't take an props (yet), so that's it for now.
+
+###
 
