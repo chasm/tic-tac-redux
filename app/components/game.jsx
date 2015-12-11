@@ -1,8 +1,7 @@
-import React, { Component } from 'react'
+import React, { Component, PropTypes } from 'react'
 
 import {
   addIndex,
-  append,
   contains,
   curry,
   filter,
@@ -16,6 +15,8 @@ import {
 } from 'ramda'
 
 import Square from './square.jsx!'
+
+import shouldPureComponentUpdate from 'react-pure-render/function'
 
 const mapIndexed = addIndex(map)
 
@@ -32,15 +33,12 @@ const winPatterns = [
 
 class Game extends Component {
 
-  constructor (props) {
-    super(props)
-
-    this.state = { history: [] }
+  static propTypes = {
+    history: PropTypes.array.isRequired,
+    store: PropTypes.object.isRequired
   }
 
-  handleClick (square) {
-    this.setState({ history: append(square, this.state.history) })
-  }
+  shouldComponentUpdate = shouldPureComponentUpdate
 
   getPlayer (move, history) {
     return (indexOf(move, history) % 2 === 0) ? 'x' : 'o'
@@ -70,10 +68,9 @@ class Game extends Component {
   }
 
   render () {
-    const board  = this.getBoard(this.state.history)
+    const board  = this.getBoard(this.props.history)
     const wins   = flatten(this.checkForWin(board))
-    const inPlay = isEmpty(wins)
-    const status = inPlay ? 'board' : 'board won'
+    const status = isEmpty(wins) ? 'board' : 'board won'
 
     return <div className={status}>
       {this.renderBoard(board, wins)}
@@ -82,16 +79,19 @@ class Game extends Component {
 
   renderBoard (board, wins) {
     const inPlay = isEmpty(wins)
+    const { store } = this.props
 
     return mapIndexed((player, idx) => {
+      const props = { key: idx, square: idx, store: store }
+      const win = contains(idx, wins)
+      const mark = player || ''
+
       if (inPlay) {
-        if (player) {
-          return <Square key={idx} player={player}/>
-        } else {
-          return <Square key={idx} clickCb={this.handleClick.bind(this, idx)}/>
-        }
+        return player ?
+          <Square {...props} mark={mark} /> :
+          <Square {...props} />
       } else {
-        return <Square key={idx} player={player} win={contains(idx, wins)}/>
+        return <Square {...props} mark={mark} win={win} />
       }
     }, board)
   }

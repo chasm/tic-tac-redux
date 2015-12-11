@@ -5,7 +5,8 @@ System.config({
   babelOptions: {
     "optional": [
       "runtime",
-      "optimisation.modules.system"
+      "optimisation.modules.system",
+      "es7.classProperties"
     ]
   },
   paths: {
@@ -29,6 +30,7 @@ System.config({
     "react-addons-pure-render-mixin": "npm:react-addons-pure-render-mixin@0.14.3",
     "react-addons-test-utils": "npm:react-addons-test-utils@0.14.3",
     "react-dom": "npm:react-dom@0.14.3",
+    "react-pure-render": "npm:react-pure-render@1.0.2",
     "react-redux": "npm:react-redux@4.0.0",
     "react-router": "npm:react-router@1.0.1",
     "redux": "npm:redux@3.0.4",

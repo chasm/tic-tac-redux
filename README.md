@@ -672,11 +672,29 @@ We test that an empty square calls the callback when clicked (maybe superfluous 
 
 And we're good to go.
 
-## OK, ready for the new stuff?
 
-Let's clean things up a bit.
 
-### `propTypes` and `defaultProps`
+
+# OK, ready for the new stuff?
+
+Let's clean things up a bit. For some of our changes, we're going to take advantage of some ES7 goodness. That's JavaScript 2016, we hope. We like to be out there on the bleeding edge.
+
+In the `config.js` file, make the `babelOptions` look like this:
+
+```js
+// in config.js
+babelOptions: {
+  "optional": [
+    "runtime",
+    "optimisation.modules.system",
+    "es7.classProperties",
+  ]
+},
+```
+
+Now let's get started.
+
+## `propTypes` and `defaultProps`
 
 The first thing we can do is spiff up our components and make them a bit more robust by declaring the types of our props and setting default values for them. We do this with `propTypes` and `defaultProps`. Go figure.
 
@@ -736,7 +754,790 @@ win: React.PropTypes.bool.isRequired
 
 Probably isn't worth it here.
 
-Game and App don't take an props (yet), so that's it for now.
+With the latest ES7 (JavaScript 2016?) toys, we can make this even cleaner. Let's use static class properties!
 
-###
+Instead of adding the `propTypes` and `defaultProps` to the `Square` class below the class definition, we'll put them right in the definition like this:
 
+```jsx
+// app/components/square.jsx
+import React, { Component } from 'react'
+
+class Square extends Component {
+
+  static propTypes = {
+    player: React.PropTypes.string,
+    win: React.PropTypes.bool,
+    clickCb: React.PropTypes.func
+  }
+
+  static defaultProps = {
+    win: false
+  }
+
+  handleClick (event) {
+    if (this.props.clickCb) {
+      this.props.clickCb()
+    }
+  }
+
+  render () {
+    const winner = this.props.win
+    const player = this.props.player
+
+    const status = winner ? `${player} win` : player
+
+    return player ?
+      <div className={status}>{player}</div> :
+      <div onClick={this.handleClick.bind(this)}/>
+  }
+}
+
+export default Square
+```
+
+Game and App don't take an props (yet), but we can use a similar trick to avoid the `constructor` in Game. We can just set the `state` directly (it changes, so don't make it `static`):
+
+```jsx
+// in app/components/game.jsx
+class Game extends Component {
+
+  state = { history: [] }
+
+  // more code . . .
+
+}
+```
+
+Remember, this *replaces* the constructor that we had before.
+
+## The component lifecycle
+
+React has a component lifecyle that provides "hooks" into the various stages in the life of a React component. These methods are called under various circumstances. Some are called when the component is instantiated and mounted, others are called when the component is updated, and one is called when the component is about to be unmounted.
+
+We can see the ordering of calls to the lifecycle methods (and when they are called) by logging them out to the console. Note that the `shouldComponentUpdate` method is used to determine whether an update is necessary, thus it must return a true or false to decide whether to update or not, respectively.
+
+Let's add these temporarily to our Game component, overwriting the current `constructor` method.
+
+```jsx
+// in app/components/game.jsx
+constructor (props) {
+  super(props)
+
+  this.state = { history: [] }
+  console.log("constructor")
+}
+
+componentWillMount () {
+  console.log("componentWillMount")
+}
+
+componentDidMount () {
+  console.log("componentDidMount")
+}
+
+shouldComponentUpdate () {
+  console.log("shouldComponentUpdate")
+  return true
+}
+
+componentWillUpdate () {
+  console.log("componentWillUpdate")
+}
+
+componentDidUpdate () {
+  console.log("componentDidUpdate")
+}
+```
+
+This component is not unmounted during our game, so we'll add the `componentWillUnmount` to the Square component instead. And then, to ensure that the Squares do eventually unmount, we'll have the board disappear when the game is won.
+
+In Square, add this method:
+
+```jsx
+// in app/components/square.jsx
+componentWillUnmount () {
+  console.log("componentWillUnmount")
+}
+```
+
+Then, in Game, we'll comment out the winning board in `renderBoard` and replace it with an empty array:
+
+```jsx
+// in app/components/game.jsx
+renderBoard (board, wins) {
+  const inPlay = isEmpty(wins)
+
+  return mapIndexed((player, idx) => {
+    if (inPlay) {
+      if (player) {
+        return <Square key={idx} player={player}/>
+      } else {
+        return <Square key={idx} clickCb={this.handleClick.bind(this, idx)}/>
+      }
+    } else {
+      return [] // <Square key={idx} player={player} win={contains(idx, wins)}/>
+    }
+  }, board)
+}
+```
+
+Now when we first load the app, we see:
+
+![Lifecycle initialize](./images/lifecycle-initialize.png)
+
+When we make a move, we see the update hooks:
+
+![Lifecycle update](./images/lifecycle-update.png)
+
+And when we finally delete the board upon a win (just temporary!), we see the 9 squares unmounting:
+
+![Lifecycle unmount](./images/lifecycle-unmount.png)
+
+What happens if we return `false` from `shouldComponentUpdate`? Let's try it. We'll change the method in Game:
+
+```jsx
+// in app/components/game.jsx
+shouldComponentUpdate () {
+  console.log("shouldComponentUpdate")
+  return false
+}
+```
+
+Now when we start the game and play a square we see:
+
+![Lifecylce should update false](./images/should-update-false.png)
+
+As you can see, the update doesn't happen. Nice.
+
+React offers a PureRenderMixin that can be used with **pure** components&mdash;components that depend only on their own props and state. Rather than look down through the component tree, the PureRenderMixin saves time by only checking at the top level and the returns false if there's no change.
+
+As we're using the state-of-the-art here, we can do this very easily using the `react-pure-render` module. Let's add it using JSPM:
+
+```sh
+jspm i npm:react-pure-render
+```
+
+Then we'll import it at the top of our Square component:
+
+```jsx
+// in app/components/square.jsx
+import shouldPureComponentUpdate from 'react-pure-render/function'
+```
+
+Then in the component itself, we'll just replace the `shouldComponentUpdate` method with the plugin's `shouldPureComponentUpdate` method:
+
+```jsx
+// in app/components/square.jsx
+shouldComponentUpdate = shouldPureComponentUpdate
+```
+
+Let's also remove the temporary hooks we added above (don't forget to fix the winning board in `renderBoard`). We'll add hooks back in as we need them.
+
+
+## REDUX!
+
+OK, time to move our state management out to a Redux store.
+
+First, let's create our store in `app/store.js`:
+
+We'll begin by creating a "reducer" function. This is a function that's going to take the current state of the application and an action, and then return a **new** state after handling the action.
+
+In other words, something like this:
+
+```js
+// app/store.js
+const history = (state, action) {
+  return state
+}
+```
+
+Right now our reducer just takes a state and returns it. What if the state hasn't been set yet? Maybe we should set a default state:
+
+```js
+// app/store.js
+const history = (state = [], action) {
+  return state
+}
+```
+
+What does this `action` look like? Well, for Redux, we expect it to be an object with at least one key called `type` that is the type of the action. In our case, the action we expect is a 'MOVE' (the type should be a string).
+
+So let's add a `switch` that will handle a 'MOVE' and return the state unchanged otherwise:
+
+
+```js
+// app/store.js
+const history = (state = [], action) {
+  switch (action.type) {
+    case 'MOVE':
+      return state
+    default:
+      return state
+  }
+}
+```
+
+OK, we need to update that state for the move. Let's assume that our action will also include a field called `square` with the number of the square being played. We'll append this to the array. We could use the Ramda `append` function as we did earlier, but ES7 gives us the spread operator, so let's use that. One thing we **DON'T** want to do is to mutate the state itself (e.g., `state.push(action.square)`&mdash;DON'T DO THIS).
+
+```js
+// app/store.js
+const history = (state = [], action) {
+  switch (action.type) {
+    case 'MOVE':
+      return [
+        ...state,
+        action.square
+      ]
+    default:
+      return state
+  }
+}
+```
+
+This says take the current state array and "spread it out" into individual values. Then we create a new array with those values and the new `action.square` value and return that NEW array as the new state.
+
+Pretty cool, eh?
+
+We also want to be able to reset our state with a 'NEW_GAME' action, so let's add that while we're at it:
+
+```js
+// app/store.js
+const history = (state = [], action) {
+  switch (action.type) {
+    case 'MOVE':
+      return [
+        ...state,
+        action.square
+      ]
+    case 'NEW_GAME':
+      return []
+    default:
+      return state
+  }
+}
+```
+
+Easy peasy.
+
+So we have our "reducer" (kind of like the `reduce` method we use earlier, and why that is so will become apparent when we get into combining reducers). Now we want to make it into a Redux store.
+
+So we'll import the Redux `createStore` method (which takes a reducer function as its sole parameter). Then we'll create our store and export it so we can use it in our App.
+
+```js
+// app/store.js
+import { createStore } from 'redux'
+
+const history = (state = [], action) => {
+  switch (action.type) {
+    case 'MOVE':
+      return [
+        ...state,
+        action.square
+      ]
+    case 'NEW_GAME':
+      return []
+    default:
+      return state
+  }
+}
+
+const store = createStore(history)
+
+export default store
+```
+
+We can now subscribe to the store, passing it a callback, and our callback will be called whenever the store updates.
+
+We want to subscribe to the store at the top level of our application, so that the updates can flow down through the application. We'll add the code to our `main.jsx` function, and we'll simply re-render our app when the store changes. We're keeping it simple here!
+
+We're also going to simplify our app a bit by skipping the App component and rendering the Game directly. We can always add the App component back in later.
+
+```jsx
+// in app/main.jsx
+import React from 'react'
+import ReactDOM from 'react-dom'
+
+import store from './store.js'
+import Game from './components/game.jsx!'
+```
+
+I'm going to rename the `main` function to `render` to make it clearer. I'm also going to add my div permanently to the `index.html` file so that I can further simplify my render method. If I'm going to rerender every time, why keep regenerating the app div? So change `index.html` like this:
+
+```html
+<!-- in index.html -->
+<body>
+  <div id="app"/>
+</body>
+```
+
+Now we can make the `render` function drop-dead simple:
+
+```jsx
+// in app/main.jsx
+const render = () => {
+  ReactDOM.render(
+    <Game history={store.getState()} store={store} />,
+    document.getElementById('app')
+  )
+}
+```
+
+Notice that we're passing both the `history` state and the `store` to the Game component as props. This is nice and pure. Game will use the `this.props.history` instead of `this.state.history`, moving state out of the game and into the store. And we pass the store down so that Game (actually, Square) can `dispatch` moves right to the store.
+
+This creates a nice one way flow of state through the app:
+
+main (get history state, pass to game) ->
+game (use history to create squares) ->
+square (receive store, click calls dispatch with move action) ->
+store (updates, sends updated history to main) ->
+main (get history state, pass to game) ->
+etc.
+
+Round and round. Nicely *react*ive.
+
+Finally, we just need to subscribe to our store, calling the `render` method when the store changes, and then, as before with `main`, we need to call it once to initialize the application. Here's the complete file now:
+
+```jsx
+// app/main.jsx
+import React from 'react'
+import ReactDOM from 'react-dom'
+
+import store from './store.js'
+import Game from './components/game.jsx!'
+
+const render = () => {
+  ReactDOM.render(
+    <Game history={store.getState()} store={store} />,
+    document.getElementById('app')
+  )
+}
+
+store.subscribe(render)
+
+render()
+```
+
+Now we'll need to update our Game. First, let's delete the `app.jsx` file.
+
+In `game.jsx`, let's import the `shouldPureComponentUpdate` function
+
+```jsx
+// in app/components.game.jsx
+import shouldPureComponentUpdate from 'react-pure-render/function'
+```
+
+Then we'll replace the `state = { history: [] }` with our new default types and we'll reassign `shouldComponentUpdate`:
+
+```jsx
+// in app/components.game.jsx
+static propTypes = {
+  history: React.PropTypes.array.isRequired,
+  store: React.PropTypes.object.isRequired
+}
+
+shouldComponentUpdate = shouldPureComponentUpdate
+```
+
+Next, we'll update our `render` method to use the `this.props.history` instead of `this.state.history`, while cleaning it up a wee bit:
+
+```jsx
+// in app/components.game.jsx
+render () {
+  const board  = this.getBoard(this.props.history)
+  const wins   = flatten(this.checkForWin(board))
+  const status = isEmpty(wins) ? 'board' : 'board won'
+
+  return <div className={status}>
+    {this.renderBoard(board, wins)}
+  </div>
+}
+```
+
+Finally, let's take advantage of React's "spread props" (now that we're experts on the spread) to clean up `renderBoard`:
+
+```jsx
+// in app/components.game.jsx
+renderBoard (board, wins) {
+  const inPlay = isEmpty(wins)
+  const { store } = this.props
+
+  return mapIndexed((player, idx) => {
+    const props = { key: idx, square: idx, store: store }
+    const win = contains(idx, wins)
+    const mark = player || ''
+
+    if (inPlay) {
+      return player ?
+        <Square {...props} mark={mark} /> :
+        <Square {...props} />
+    } else {
+      return <Square {...props} mark={mark} win={win} />
+    }
+  }, board)
+}
+```
+
+Whoa! What's going on here? We're no longer passing our `clickCb` method. Instead, we're passing the store down to the squares. Now the squares can dispatch actions all on their own. Remember our one-way path? This is cleaner than passing things up and down. Everything goes *down*, nothing goes *up*.
+
+We're also eliminating a warning we got by using `player` both for true/false and for the player's mark. Now we pass the square a string, which can be 'x', 'o', or just ''.
+
+We're also passing in the number of the square. We no longer have the bound `clickCb` callback, so the square will need to pass this number to the store on dispatch. Because the `key`, `square`, and `store` props are sent every time, it's easiest to combine them into an object, and then use React's "spread properties" (...) operator to insert them into each Square. Then we add mark and/or win (or neither) as appropriate.
+
+Oh, and we're using destructured assignment to grab the `store` from `this.props`. Almost not worth it here, but when there are several props, definitely a space saver.
+
+We should also remember to *delete the now-unused `clickCb` method*. Here's our current Game component, cleaning up the PropTypes.
+
+```jsx
+// app/components.game.jsx
+import React, { Component, PropTypes } from 'react'
+
+import {
+  addIndex,
+  contains,
+  curry,
+  filter,
+  flatten,
+  indexOf,
+  isEmpty,
+  map,
+  reduce,
+  repeat,
+  update
+} from 'ramda'
+
+import Square from './square.jsx!'
+
+import shouldPureComponentUpdate from 'react-pure-render/function'
+
+const mapIndexed = addIndex(map)
+
+const winPatterns = [
+  [0, 1, 2],
+  [3, 4, 5],
+  [6, 7, 8],
+  [0, 3, 6],
+  [1, 4, 7],
+  [2, 5, 8],
+  [0, 4, 8],
+  [2, 4, 6]
+]
+
+class Game extends Component {
+
+  static propTypes = {
+    history: PropTypes.array.isRequired,
+    store: PropTypes.object.isRequired
+  }
+
+  shouldComponentUpdate = shouldPureComponentUpdate
+
+  getPlayer (move, history) {
+    return (indexOf(move, history) % 2 === 0) ? 'x' : 'o'
+  }
+
+  makeMove (history, memo, move) {
+    const player = this.getPlayer(move, history)
+
+    return update(move, player, memo)
+  }
+
+  getBoard (history) {
+    const move = curry(this.makeMove.bind(this))
+    const memo = repeat(false, 9)
+
+    return reduce(move(history), memo, history)
+  }
+
+  checkForWin (board) {
+    return filter((pattern) => {
+      var s1 = board[pattern[0]]
+      var s2 = board[pattern[1]]
+      var s3 = board[pattern[2]]
+
+      return s1 && s1 === s2 && s2 === s3
+    }, winPatterns)
+  }
+
+  render () {
+    const board  = this.getBoard(this.props.history)
+    const wins   = flatten(this.checkForWin(board))
+    const status = isEmpty(wins) ? 'board' : 'board won'
+
+    return <div className={status}>
+      {this.renderBoard(board, wins)}
+    </div>
+  }
+
+  renderBoard (board, wins) {
+    const inPlay = isEmpty(wins)
+    const { store } = this.props
+
+    return mapIndexed((player, idx) => {
+      const props = { key: idx, square: idx, store: store }
+      const win = contains(idx, wins)
+      const mark = player || ''
+
+      if (inPlay) {
+        return player ?
+          <Square {...props} mark={mark} /> :
+          <Square {...props} />
+      } else {
+        return <Square {...props} mark={mark} win={win} />
+      }
+    }, board)
+  }
+}
+
+export default Game
+```
+
+Now let's update our Square to call the store's `dispatch` method with a MOVE action.
+
+First, we'll update our props:
+
+```jsx
+// in app/components/square.jsx
+static propTypes = {
+  store: React.PropTypes.object.isRequired,
+  square: React.PropTypes.number.isRequired,
+  mark: React.PropTypes.string,
+  win: React.PropTypes.bool,
+}
+
+static defaultProps = { win: false }
+```
+
+We're always going to need access to the store to dispatch our move, and we'll need to know what square we are for that. We've updated `player` to be `mark`, which is more appropriate as it's always a string now. And we have a boolean `win` to set whether this is one of the winning squares, not that there's any money or fame involved or anything.
+
+Our `handleClick` method is the next to change. Instead of calling the passed-in `clickCb` method from Game, we're now going to create a MOVE action and pass it to the store's `dispatch` method:
+
+```jsx
+// in app/components/square.jsx
+handleClick () {
+  this.props.store.dispatch({
+    type: 'MOVE',
+    square: this.props.square
+  })
+}
+```
+
+Now we see what a Redux action looks like. The one required key is the `type`, which should be a string (uppercase seems to be best practice). We're also including the number of the Square so it can be appended to the moves history.
+
+Finally, we need to handle changes to the `render` method. Here is the full, updated Square component. We'll clean up the PropTypes while we're at it.
+
+```jsx
+// app/components/square.jsx
+import React, { Component, PropTypes } from 'react'
+
+import shouldPureComponentUpdate from 'react-pure-render/function'
+
+class Square extends Component {
+
+  static propTypes = {
+    store: PropTypes.object.isRequired,
+    square: PropTypes.number.isRequired,
+    mark: PropTypes.string,
+    win: PropTypes.bool,
+  }
+
+  static defaultProps = { win: false }
+
+  shouldComponentUpdate = shouldPureComponentUpdate
+
+  handleClick () {
+    this.props.store.dispatch({
+      type: 'MOVE',
+      square: this.props.square
+    })
+  }
+
+  render () {
+    const { win, mark } = this.props
+
+    const status = win ? `${mark} win` : mark
+
+    return !!mark ?
+      <div className={status}>{mark}</div> :
+      <div onClick={this.handleClick.bind(this)}/>
+  }
+}
+
+export default Square
+```
+
+OK, then.
+
+## What happened to our tests?
+
+Well, um, they're broken. Let's fix them.
+
+First, we no longer have an `app.jsx` file and we now have a `store.js` file, so let's fix our imports:
+
+```js
+// in test/tests.js
+import React from 'react'
+import TestUtils from 'react-addons-test-utils'
+
+import { expect } from 'chai'
+import { forEach } from 'ramda'
+
+import Game from '../app/components/game.jsx!'
+import Square from '../app/components/square.jsx!'
+
+import store from '../app/store.js'
+```
+
+And we can simply delete the App's `describe` block.
+
+For the Game block, we'll need to rethink our `beforeEach` method. Set up will be quite different. We need to add our store, pass it into the game along with the state, and subscribe to the store for re-rendering. And we'll need to set our state back to the default each time. How convenient our currently unused 'NEW_GAME' action.
+
+```js
+// in test/tests.js
+describe("Game", () => {
+  let game
+  let render
+
+  beforeEach(() => {
+    store.dispatch({ type: 'NEW_GAME' })
+
+    render = () => {
+      game =
+        renderIntoDocument(<Game history={store.getState()} store={store}/>)
+    }
+
+    store.subscribe(render)
+    render()
+  })
+
+  // more code . . .
+})
+```
+
+Basically, we're just recreating our `main.jsx` file here, but rendering it into the Document instead.
+
+Our first three Game specs look the same, except that history is now a prop rather than state:
+
+```js
+// in test/tests.js
+it("is a composite component", () => {
+  expect(isCompositeComponent(game)).to.equal(true)
+})
+
+it("has one board", () => {
+  expect(scryRenderedDOMComponentsWithClass(game, 'board').length).to.equal(1)
+})
+
+it("begins with an empty history", () => {
+  expect(game.props.history).to.eql([])   // props!!
+})
+```
+
+The board section is almost the same. The biggest difference is that the board is being re-rendered, so we need to grab it from the document again before we check our squares. To simplify things, we've also eliminated a few variables.
+
+```js
+// in test/tests.js
+describe("board", () => {
+  let board
+
+  beforeEach(() => {
+    board = scryRenderedDOMComponentsWithClass(game, 'board')[0]
+  })
+
+  it("has nine squares", () => {
+    expect(board.childNodes.length).to.equal(9)
+  })
+
+  it("prevents rewriting squares", () => {
+    Simulate.click(board.childNodes[4])
+    Simulate.click(board.childNodes[4])
+
+    // Board was rerendered!
+    board = scryRenderedDOMComponentsWithClass(game, 'board')[0]
+
+    expect(board.childNodes[4].innerHTML).to.equal('x')
+  })
+
+  it("tracks moves in game history", () => {
+    Simulate.click(board.childNodes[4])
+    Simulate.click(board.childNodes[3])
+    Simulate.click(board.childNodes[0])
+
+    // history is in props now!
+    expect(game.props.history).to.eql([4,3,0])
+  })
+
+  it("can alternate moves, X first", () => {
+    Simulate.click(board.childNodes[4])
+    Simulate.click(board.childNodes[3])
+    Simulate.click(board.childNodes[0])
+
+    // Board was rerendered!
+    board = scryRenderedDOMComponentsWithClass(game, 'board')[0]
+
+    expect(board.childNodes[4].innerHTML).to.equal('x')
+    expect(board.childNodes[3].innerHTML).to.equal('o')
+    expect(board.childNodes[0].innerHTML).to.equal('x')
+  })
+
+  it("recognizes a win", () => {
+    const moves = [4, 3, 0, 8, 2, 1, 6] // win
+
+    forEach((idx) => Simulate.click(board.childNodes[idx]), moves)
+
+    expect(
+      scryRenderedDOMComponentsWithClass(game, 'board won').length
+    ).to.equal(1)
+  })
+
+  it("prevents further play after a win", () => {
+    const lastSquare = board.childNodes[7]
+    const moves = [4, 3, 0, 8, 2, 1, 6] // win
+
+    forEach((idx) => Simulate.click(board.childNodes[idx]), moves)
+
+    Simulate.click(lastSquare)
+
+    expect(lastSquare.innerHTML).to.be.empty
+  })
+})
+```
+
+Last but not least&mdash;OK, maybe least&mdash;let's add the correct props to our Squares in the Squares block:
+
+```js
+// in test/tests.js
+describe("Square", () => {
+  let square
+  const mark = 'x'
+
+  describe("when empty", () => {
+    before(() => {
+      // Add store and square props!
+      square = renderIntoDocument(<Square store={store} square={1} />)
+    })
+
+    it("is a composite component", () => {
+      expect(isCompositeComponent(square)).to.equal(true)
+    })
+  })
+
+  describe("after play", () => {
+    beforeEach(() => {
+      square = renderIntoDocument(
+        // Add store and square props!
+        <Square store={store} square={1}  mark={mark}/>
+      )
+    })
+
+    it("has the correct content", () => {
+      const div = scryRenderedDOMComponentsWithTag(square, 'div')[0]
+
+      expect(div && div.innerHTML).to.equal(mark)
+    })
+
+    it("applies the player's style", () => {
+      expect(scryRenderedDOMComponentsWithClass(square, 'x')).not.to.be.empty
+    })
+  })
+})
+```

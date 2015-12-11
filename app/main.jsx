@@ -1,14 +1,16 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 
-import App from './components/App.jsx!'
+import store from './store.js'
+import Game from './components/game.jsx!'
 
-const main = () => {
-  const app = document.createElement('div')
-
-  document.body.appendChild(app)
-
-  ReactDOM.render(<App/>, app)
+const render = () => {
+  ReactDOM.render(
+    <Game history={store.getState()} store={store} />,
+    document.getElementById('app')
+  )
 }
 
-main()
+store.subscribe(render)
+
+render()

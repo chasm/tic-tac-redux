@@ -1,0 +1,1 @@
+module.exports = require("npm:react-pure-render@1.0.2/index");

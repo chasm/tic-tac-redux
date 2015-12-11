@@ -1058,5 +1058,6 @@
   },
   "npm:react-addons-test-utils@0.14.3": {
     "react": "npm:react@^0.14.3"
-  }
+  },
+  "npm:react-pure-render@1.0.2": {}
 }
