@@ -26,7 +26,7 @@ describe("Game", () => {
 
     render = () => {
       game =
-        renderIntoDocument(<Game history={store.getState()} store={store}/>)
+        renderIntoDocument(<Game history={store.getState()[0]} store={store}/>)
     }
 
     store.subscribe(render)

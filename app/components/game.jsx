@@ -31,6 +31,24 @@ const winPatterns = [
   [2, 4, 6]
 ]
 
+const buttonStyle = {
+  backgroundColor: '#d9534f',
+  border: '1px solid rgba(0, 0, 0, 0)',
+  borderColor: '#d43f3a',
+  borderRadius: '4px',
+  color: '#ffffff',
+  cursor: 'pointer',
+  display: 'inline-block',
+  fontSize: '14px',
+  fontWeight: 400,
+  lineHeight: 1.4,
+  margin: '5px auto',
+  padding: '6px 12px',
+  textAlign: 'center',
+  verticalAlign: 'middle',
+  whiteSpace: 'nowrap',
+}
+
 class Game extends Component {
 
   static propTypes = {
@@ -73,11 +91,13 @@ class Game extends Component {
     const wins   = flatten(this.checkForWin(board))
     const status = isEmpty(wins) ? 'board' : 'board won'
 
-    return <div>
+    return <div style={{textAlign: 'center'}}>
       <div className={status}>
         {this.renderBoard(board, wins)}
       </div>
-      <button onClick={() => store.dispatch({ type: 'NEW_GAME' })}>
+      <button
+        style={buttonStyle}
+        onClick={() => store.dispatch({ type: 'NEW_GAME' })}>
         New Game
       </button>
     </div>
