@@ -1,4 +1,4 @@
-import { createStore } from 'redux'
+import { combineReducers, createStore } from 'redux'
 
 const history = (state = [], action) => {
   switch (action.type) {
@@ -7,13 +7,28 @@ const history = (state = [], action) => {
         ...state,
         action.square
       ]
-    case 'NEW_GAME':
-      return []
     default:
       return state
   }
 }
 
-const store = createStore(history)
+const game = (state = [[]], action) => {
+  switch (action.type) {
+    case 'NEW_GAME':
+      return [
+        [],
+        ...state
+      ]
+    case 'MOVE':
+      return [
+        history(state[0], action),
+        ...state.slice(1)
+      ]
+    default:
+      return state
+  }
+}
+
+const store = createStore(game)
 
 export default store

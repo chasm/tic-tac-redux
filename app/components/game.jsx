@@ -68,12 +68,18 @@ class Game extends Component {
   }
 
   render () {
-    const board  = this.getBoard(this.props.history)
+    const { store, history } = this.props
+    const board  = this.getBoard(history)
     const wins   = flatten(this.checkForWin(board))
     const status = isEmpty(wins) ? 'board' : 'board won'
 
-    return <div className={status}>
-      {this.renderBoard(board, wins)}
+    return <div>
+      <div className={status}>
+        {this.renderBoard(board, wins)}
+      </div>
+      <button onClick={() => store.dispatch({ type: 'NEW_GAME' })}>
+        New Game
+      </button>
     </div>
   }
 
