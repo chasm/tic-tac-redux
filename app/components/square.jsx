@@ -24,7 +24,6 @@ class Square extends Component {
 
   render () {
     const { win, mark } = this.props
-
     const status = win ? `${mark} win` : mark
 
     return !!mark ?

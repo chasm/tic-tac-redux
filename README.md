@@ -1757,4 +1757,145 @@ We need the !important to override inline styles.
 
 And that should work!
 
+## A bit more fun
 
+As we had more time, we decided to implement an Undo Move function. This turned out to be surprisingly easy (I didn't plan it out ahead of time, so we were winging it).
+
+It was an easy thing to add another button to call an 'UNDO_MOVE' action:
+
+```jsx
+// in app/components/game.jsx
+return <div style={{textAlign: 'center'}}>
+  <div className={status}>
+    {this.renderBoard(board, wins)}
+  </div>
+  <button
+    style={buttonStyle}
+    onClick={() => store.dispatch({ type: 'NEW_GAME' })}>
+    New Game
+  </button>
+  <button
+    style={buttonStyle}
+    onClick={() => store.dispatch({ type: 'UNDO_MOVE' })}>
+    Undo Move
+  </button>
+</div>
+```
+
+Then it was simply a matter of handling the new action in the store. There was no difference in the `game` reducer between a move and undoing a move&mdash;both are passed off to the `history` reducer. So we could just fall through on the case:
+
+```js
+// in test/tests.js
+const game = (state = [[]], action) => {
+  switch (action.type) {
+    case 'NEW_GAME':
+      return [
+        history(undefined, action),
+        ...state
+      ]
+    case 'MOVE':
+    case 'UNDO_MOVE':
+      return [
+        history(state[0], action),
+        ...state.slice(1)
+      ]
+    default:
+      return state
+  }
+}
+```
+
+Then we just need to add the UNDO_MOVE action to the `history` reducer:
+
+```js
+// in test/tests.js
+const history = (state = [], action) => {
+  switch (action.type) {
+    case 'MOVE':
+      return [
+        ...state,
+        action.square
+      ]
+    case 'UNDO_MOVE':
+      return [
+        ...state.slice(0, state.length - 1)
+      ]
+    default:
+      return state
+  }
+}
+```
+
+We just take the current state, slice off all but the last move, and then use the spread operator to create a new array from those first elements. Then we return that as the new state.
+
+This method of doing it destroys the record of the old state, so if we moved to 4 and then undid it, we would no longer have any record of the move. An alternative is to push a new history array into the state with each move, and then when undoing a move simply push a new array without that move onto the store.
+
+The first method sees state change like this:
+
+```
+[] -> [4] -> [4, 3] -> [4, 3, 0] -> [4, 3, 0, 8] ->[4, 3, 0]
+```
+
+At any given time only one of these arrays exists in state. The second method pushes the arrays onto an array:
+
+```
+[] ->
+
+[]
+[4] ->
+
+[]
+[4]
+[4, 3] ->
+
+[]
+[4]
+[4, 3]
+[4, 3, 0] ->
+
+[]
+[4]
+[4, 3]
+[4, 3, 0]
+[4, 3, 0, 8] ->
+
+[]
+[4]
+[4, 3]
+[4, 3, 0]
+[4, 3, 0, 8]
+[4, 3, 0] ->
+
+[]
+[4]
+[4, 3]
+[4, 3, 0]
+[4, 3, 0, 8]
+[4, 3, 0]
+[4, 3, 0, 2]
+```
+
+So this way you have a history of moves and undone moves. Which you use depends on what you want.
+
+One last note: we can also clean up the `renderBoard` method a bit more by leaning on the spread props:
+
+```jsx
+// in app/components/game.jsx
+renderBoard (board, wins) {
+  const inPlay = isEmpty(wins)
+  const { store } = this.props
+
+  return mapIndexed((player, idx) => {
+    const props = { key: idx, square: idx, store: store }
+
+    if (contains(idx, wins)) { props.win = true }
+    if (player) { props.mark = player }
+
+    return <Square {...props} />
+  }, board)
+}
+```
+
+I'm sure there's lots more refactoring possible.
+
+One big problem with our current refactor is that our switch to using actions allows play to continue after a win, and even for *both* players to win! But I'm too tired to fix this, so instead I went to Wikipedia and just changed the rules for TicTacToe. It was easier.

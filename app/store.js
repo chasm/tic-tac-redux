@@ -7,6 +7,10 @@ const history = (state = [], action) => {
         ...state,
         action.square
       ]
+    case 'UNDO_MOVE':
+      return [
+        ...state.slice(0, state.length - 1)
+      ]
     default:
       return state
   }
@@ -20,6 +24,7 @@ const game = (state = [[]], action) => {
         ...state
       ]
     case 'MOVE':
+    case 'UNDO_MOVE':
       return [
         history(state[0], action),
         ...state.slice(1)

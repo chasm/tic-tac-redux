@@ -42,7 +42,7 @@ const buttonStyle = {
   fontSize: '14px',
   fontWeight: 400,
   lineHeight: 1.4,
-  margin: '5px auto',
+  margin: '5px',
   padding: '6px 12px',
   textAlign: 'center',
   verticalAlign: 'middle',
@@ -100,6 +100,11 @@ class Game extends Component {
         onClick={() => store.dispatch({ type: 'NEW_GAME' })}>
         New Game
       </button>
+      <button
+        style={buttonStyle}
+        onClick={() => store.dispatch({ type: 'UNDO_MOVE' })}>
+        Undo Move
+      </button>
     </div>
   }
 
@@ -109,16 +114,11 @@ class Game extends Component {
 
     return mapIndexed((player, idx) => {
       const props = { key: idx, square: idx, store: store }
-      const win = contains(idx, wins)
-      const mark = player || ''
 
-      if (inPlay) {
-        return player ?
-          <Square {...props} mark={mark} /> :
-          <Square {...props} />
-      } else {
-        return <Square {...props} mark={mark} win={win} />
-      }
+      if (contains(idx, wins)) { props.win = true }
+      if (player) { props.mark = player }
+
+      return <Square {...props} />
     }, board)
   }
 }
