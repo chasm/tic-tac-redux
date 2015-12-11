@@ -1541,3 +1541,220 @@ describe("Square", () => {
   })
 })
 ```
+
+## Multiple games?
+
+What if we want to track games? We could implement a new game button and push the games into the store.
+
+Let's start by extending our store:
+
+What we want is a `game` reducer that calls our `history` reducer with the correct game.
+
+We'll keep our state simple for the moment: It will simply be an array of arrays with current game at the *head* of the array. That way we can grab it with `[0]`.
+
+So our initial state will be an array with a single game array in it: `[[]]`.
+
+Here's the start of our `game` reducer:
+
+```js
+// in app/store.js
+const game = (state = [[]], action) => {
+  return state
+}
+```
+
+OK, we know we want to handle two actions at least: 'NEW_GAME' and 'MOVE'. So let's add the switch:
+
+```js
+// in app/store.js
+const game = (state = [[]], action) => {
+  switch (action.type) {
+    case 'NEW_GAME':
+      return state
+    case 'MOVE':
+      return state
+    default:
+      return state
+  }
+}
+```
+
+Well, so far it doesn't do much. Bad reducer! Bad!
+
+Before we extend it further let's take a look at our `history` reducer and see how it needs to change. Here it is in its present form:
+
+```js
+// in app/store.js
+const history = (state = [], action) => {
+  switch (action.type) {
+    case 'MOVE':
+      return [
+        ...state,
+        action.square
+      ]
+    case 'NEW_GAME':
+      return []
+    default:
+      return state
+  }
+}
+```
+
+Well, we don't need the NEW_GAME action anymore, but otherwise it looks about right. It will be working with that inner array, so nothing to change there:
+
+```js
+// in app/store.js
+const history = (state = [], action) => {
+  switch (action.type) {
+    case 'MOVE':
+      return [
+        ...state,
+        action.square
+      ]
+    default:
+      return state
+  }
+}
+```
+
+Now we need to call it from our new reducer:
+
+```js
+// in app/store.js
+const game = (state = [[]], action) => {
+  switch (action.type) {
+    case 'NEW_GAME':
+      return state
+    case 'MOVE':
+      return [
+        history(state[0], action),
+        ...state.slice(1)
+      ]
+    default:
+      return state
+  }
+}
+```
+
+We'll call the `history` reducer and pass it the array at the *start* of our state array (the head). That's our current game. We'll pass along the action.
+
+Then we'll create a new array with the history array returned from our call to `history` in the first index, and the rest of the state array of games following. We use `slice(1)`, but we could have used Ramda's `tail` function as well.
+
+Finally, we need to implment the NEW_GAME functionality. All it needs to do is insert a new game. We could insert a `[]`, but we should let our `history` reducer do its job. Here's our new store:
+
+```js
+// app/store.js
+import { createStore } from 'redux'
+
+const history = (state = [], action) => {
+  switch (action.type) {
+    case 'MOVE':
+      return [
+        ...state,
+        action.square
+      ]
+    default:
+      return state
+  }
+}
+
+const game = (state = [[]], action) => {
+  switch (action.type) {
+    case 'NEW_GAME':
+      return [
+        history(undefined, action),
+        ...state
+      ]
+    case 'MOVE':
+      return [
+        history(state[0], action),
+        ...state.slice(1)
+      ]
+    default:
+      return state
+  }
+}
+
+const store = createStore(game)
+
+export default store
+```
+
+Now the only remaining change we need to make is to grab that first array from the state instead of the whole state.
+
+We can do this in `main.jsx`:
+
+```jsx
+// in app/main.jsx
+const render = () => {
+  ReactDOM.render(
+    <Game history={store.getState()[0]} store={store} />,
+    document.getElementById('app')
+  )
+}
+```
+
+And we'll do it in our tests, too:
+
+```js
+// in test/tests.js
+render = () => {
+  game =
+    renderIntoDocument(<Game history={store.getState()[0]} store={store}/>)
+}
+```
+
+Finally, let's add a button to our Game to reset the game. We'll check out inline styles while we're at it:
+
+```jsx
+// in app/components/game.jsx
+const buttonStyle = {
+  backgroundColor: '#d9534f',
+  border: '1px solid rgba(0, 0, 0, 0)',
+  borderColor: '#d43f3a',
+  borderRadius: '4px',
+  color: '#ffffff',
+  cursor: 'pointer',
+  display: 'inline-block',
+  fontSize: '14px',
+  fontWeight: 400,
+  lineHeight: 1.4,
+  margin: '5px auto',
+  padding: '6px 12px',
+  textAlign: 'center',
+  verticalAlign: 'middle',
+  whiteSpace: 'nowrap',
+}
+```
+
+And then the button:
+
+```jsx
+// in app/components/game.jsx
+return <div style={{textAlign: 'center'}}>
+  <div className={status}>
+    {this.renderBoard(board, wins)}
+  </div>
+  <button
+    style={buttonStyle}
+    onClick={() => store.dispatch({ type: 'NEW_GAME' })}>
+    New Game
+  </button>
+</div>
+```
+
+One drawback to inline styles is that pseudoclasses are difficult. We'll cheat, and just add our hover state to the CSS:
+
+```css
+/* in styles/main.css */
+button:hover {
+  background-color: #c9302c !important;
+  border-color: #ac2925 !important;
+}
+```
+
+We need the !important to override inline styles.
+
+And that should work!
+
+

@@ -1,4 +1,4 @@
-import { combineReducers, createStore } from 'redux'
+import { createStore } from 'redux'
 
 const history = (state = [], action) => {
   switch (action.type) {
@@ -16,7 +16,7 @@ const game = (state = [[]], action) => {
   switch (action.type) {
     case 'NEW_GAME':
       return [
-        [],
+        history(undefined, action),
         ...state
       ]
     case 'MOVE':
