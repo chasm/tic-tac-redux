@@ -22,12 +22,12 @@
   "author": "ForbesLindesay",
   "license": "MIT",
   "devDependencies": {
-    "acorn": "^1.0.1",
+    "acorn": "~6.0.4",
     "better-assert": "*",
-    "istanbul": "^0.3.13",
-    "mocha": "*",
+    "istanbul": "^0.4.5",
+    "mocha": "5.2.0",
     "promises-aplus-tests": "*",
-    "rimraf": "^2.3.2"
+    "rimraf": "~2.6.2"
   },
   "dependencies": {
     "asap": "~2.0.3"
