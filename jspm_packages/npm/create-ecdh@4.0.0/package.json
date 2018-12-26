@@ -28,7 +28,7 @@
     "elliptic": "^6.0.0"
   },
   "devDependencies": {
-    "tap-spec": "^1.0.1",
-    "tape": "^3.0.1"
+    "tap-spec": "^5.0.0",
+    "tape": "~4.9.1"
   }
 }
