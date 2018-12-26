@@ -23,9 +23,9 @@
   },
   "homepage": "https://github.com/indutny/hash.js",
   "dependencies": {
-    "inherits": "^2.0.1"
+    "inherits": "2.0.3"
   },
   "devDependencies": {
-    "mocha": "^1.18.2"
+    "mocha": "5.2.0"
   }
 }
