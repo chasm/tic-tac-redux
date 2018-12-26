@@ -1,6 +1,6 @@
 {
   "registry": "npm",
   "dependencies": {
-    "buffer": "^3.0.1"
+    "buffer": "^5.2.1"
   }
 }
