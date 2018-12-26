@@ -30,6 +30,6 @@
     "environments"
   ],
   "devDependencies": {
-    "mocha": "*"
+    "mocha": "5.2.0"
   }
 }
