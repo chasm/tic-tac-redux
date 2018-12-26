@@ -5,12 +5,12 @@
   "main": "readable.js",
   "dependencies": {
     "core-util-is": "~1.0.0",
-    "isarray": "0.0.1",
-    "string_decoder": "~0.10.x",
-    "inherits": "~2.0.1"
+    "isarray": "2.0.4",
+    "string_decoder": "~1.2.0",
+    "inherits": "2.0.3"
   },
   "devDependencies": {
-    "tap": "~0.2.6"
+    "tap": "~12.1.1"
   },
   "scripts": {
     "test": "tap test/simple/*.js"
