@@ -22,7 +22,7 @@
         "test" : "tape test/*.js"
     },
     "devDependencies" : {
-        "tape" : "~2.4.0"
+        "tape" : "~4.9.1"
     },
     "license" : "MIT",
     "author" : {
