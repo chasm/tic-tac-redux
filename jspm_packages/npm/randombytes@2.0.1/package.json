@@ -22,7 +22,7 @@
   "homepage": "https://github.com/crypto-browserify/randombytes",
   "browser": "browser.js",
   "devDependencies": {
-    "tap-spec": "^2.1.2",
-    "tape": "^3.0.3"
+    "tap-spec": "^5.0.0",
+    "tape": "~4.9.1"
   }
 }
