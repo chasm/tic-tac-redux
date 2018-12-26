@@ -20,7 +20,7 @@
   "author": "Parsha Pourkhomami",
   "license": "WTFPL",
   "devDependencies": {
-    "tape": "^3.5.0"
+    "tape": "~4.9.1"
   },
   "dependencies": {
     "is-finite": "^1.0.0"
