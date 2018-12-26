@@ -1,6 +1,6 @@
 {
   "registry": "npm",
   "dependencies": {
-    "string_decoder": "^0.10.31"
+    "string_decoder": "~1.2.0"
   }
 }
