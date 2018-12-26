@@ -59,10 +59,10 @@
   },
   "main": "./index.js",
   "devDependencies": {
-    "projectz": "~0.3.17",
-    "chai": "~1.10.0",
-    "joe": "~1.5.0",
-    "joe-reporter-console": "~1.2.1"
+    "projectz": "~1.7.4",
+    "chai": "4.2.0",
+    "joe": "~2.0.2",
+    "joe-reporter-console": "~2.0.2"
   },
   "scripts": {
     "test": "node ./test.js"
