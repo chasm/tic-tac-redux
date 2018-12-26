@@ -26,15 +26,15 @@
   },
   "homepage": "https://github.com/crypto-browserify/browserify-aes",
   "dependencies": {
-    "buffer-xor": "^1.0.2",
+    "buffer-xor": "^2.0.2",
     "cipher-base": "^1.0.0",
     "create-hash": "^1.1.0",
     "evp_bytestokey": "^1.0.0",
-    "inherits": "^2.0.1"
+    "inherits": "2.0.3"
   },
   "devDependencies": {
-    "standard": "^3.7.3",
-    "tap-spec": "^1.0.0",
-    "tape": "^3.0.0"
+    "standard": "^12.0.1",
+    "tap-spec": "^5.0.0",
+    "tape": "~4.9.1"
   }
 }
