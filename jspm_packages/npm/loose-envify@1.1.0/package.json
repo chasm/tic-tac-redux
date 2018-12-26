@@ -22,11 +22,11 @@
     "test": "tap test/*.js"
   },
   "dependencies": {
-    "js-tokens": "^1.0.1"
+    "js-tokens": "4.0.0"
   },
   "devDependencies": {
-    "browserify": "^11.0.1",
-    "envify": "^3.4.0",
-    "tap": "^1.4.0"
+    "browserify": "~16.2.3",
+    "envify": "^4.1.0",
+    "tap": "~12.1.1"
   }
 }
