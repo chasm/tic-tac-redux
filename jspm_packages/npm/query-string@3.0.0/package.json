@@ -34,10 +34,10 @@
     "decode"
   ],
   "dependencies": {
-    "strict-uri-encode": "^1.0.0"
+    "strict-uri-encode": "^2.0.0"
   },
   "devDependencies": {
-    "ava": "*",
+    "ava": "1.0.1",
     "xo": "*"
   }
 }
