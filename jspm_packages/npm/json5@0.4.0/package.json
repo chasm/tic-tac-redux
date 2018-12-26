@@ -16,7 +16,7 @@
     "bin": "lib/cli.js",
     "dependencies": {},
     "devDependencies": {
-        "mocha": "~1.0.3"
+        "mocha": "5.2.0"
     },
     "scripts": {
         "build": "./lib/cli.js -c package.json5",
