@@ -20,15 +20,15 @@
     }
   ],
   "devDependencies": {
-    "babel": "^5.0.7",
-    "babel-eslint": "^3.0.1",
-    "chai": "^2.0.0",
-    "coveralls": "^2.11.1",
-    "eslint": "^0.21.0",
-    "istanbul": "^0.3.2",
-    "mocha": "^2.0.1",
+    "babel": "^6.23.0",
+    "babel-eslint": "^10.0.1",
+    "chai": "4.2.0",
+    "coveralls": "^3.0.2",
+    "eslint": "^5.11.0",
+    "istanbul": "^0.4.5",
+    "mocha": "5.2.0",
     "pre-commit": "^1.0.7",
-    "react": "^0.13.3"
+    "react": "^16.7.0"
   },
   "keywords": [
     "react"
