@@ -27,12 +27,12 @@
     "url": "http://github.com/estools/esutils.git"
   },
   "devDependencies": {
-    "chai": "~1.7.2",
-    "coffee-script": "~1.6.3",
-    "jshint": "2.6.3",
-    "mocha": "~2.2.1",
-    "regenerate": "~1.2.1",
-    "unicode-7.0.0": "^0.1.5"
+    "chai": "4.2.0",
+    "coffee-script": "1.12.7",
+    "jshint": "2.9.7",
+    "mocha": "5.2.0",
+    "regenerate": "~1.4.0",
+    "unicode-7.0.0": "^0.7.5"
   },
   "licenses": [
     {
