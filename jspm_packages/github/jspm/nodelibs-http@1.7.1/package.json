@@ -14,12 +14,12 @@
   },
   "registry": "npm",
   "dependencies": {
-    "Base64": "~0.2.0",
-    "inherits": "~2.0.1"
+    "Base64": "~1.0.1",
+    "inherits": "2.0.3"
   },
   "devDependencies": {
-    "ecstatic": "~0.1.6",
-    "tape": "~2.3.2"
+    "ecstatic": "~3.3.0",
+    "tape": "~4.9.1"
   },
   "repository": {
     "type": "git",
