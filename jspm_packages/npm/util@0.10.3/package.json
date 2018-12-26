@@ -19,11 +19,11 @@
     "test": "node test/node/*.js && zuul test/browser/*.js"
   },
   "dependencies": {
-    "inherits": "2.0.1"
+    "inherits": "2.0.3"
   },
   "license": "MIT",
   "devDependencies": {
-    "zuul": "~1.0.9"
+    "zuul": "~3.12.0"
   },
   "browser": {
     "./support/isBuffer.js": "./support/isBufferBrowser.js"
