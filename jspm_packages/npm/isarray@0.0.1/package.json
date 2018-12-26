@@ -13,7 +13,7 @@
   },
   "dependencies" : {},
   "devDependencies" : {
-    "tap" : "*"
+    "tap" : "~12.1.1"
   },
   "keywords": ["browser","isarray","array"],
   "author": {
