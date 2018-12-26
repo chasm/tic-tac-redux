@@ -21,7 +21,7 @@
     "test": "mocha"
   },
   "devDependencies": {
-    "mocha": "*"
+    "mocha": "5.2.0"
   },
   "engines": {
     "node": ">=0.10.0"
