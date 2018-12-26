@@ -32,10 +32,10 @@
     "graceful"
   ],
   "dependencies": {
-    "os-tmpdir": "^1.0.1",
-    "user-home": "^1.1.1"
+    "os-tmpdir": "^2.0.0",
+    "user-home": "^2.0.0"
   },
   "devDependencies": {
-    "ava": "0.0.4"
+    "ava": "1.0.1"
   }
 }
