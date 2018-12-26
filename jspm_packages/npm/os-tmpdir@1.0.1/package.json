@@ -35,6 +35,6 @@
     "environment"
   ],
   "devDependencies": {
-    "ava": "0.0.4"
+    "ava": "1.0.1"
   }
 }
