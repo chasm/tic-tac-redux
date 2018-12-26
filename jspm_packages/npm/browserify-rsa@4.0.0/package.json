@@ -18,7 +18,7 @@
   },
   "devDependencies": {
     "parse-asn1": "^5.0.0",
-    "tap-spec": "^2.1.2",
-    "tape": "^3.0.3"
+    "tap-spec": "^5.0.0",
+    "tape": "~4.9.1"
   }
 }
