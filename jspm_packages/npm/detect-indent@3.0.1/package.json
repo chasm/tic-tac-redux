@@ -38,11 +38,11 @@
     "tab"
   ],
   "dependencies": {
-    "get-stdin": "^4.0.1",
+    "get-stdin": "^6.0.0",
     "minimist": "^1.1.0",
-    "repeating": "^1.1.0"
+    "repeating": "^3.0.0"
   },
   "devDependencies": {
-    "mocha": "*"
+    "mocha": "5.2.0"
   }
 }
