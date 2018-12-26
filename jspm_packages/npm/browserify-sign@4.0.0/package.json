@@ -21,12 +21,12 @@
     "create-hash": "^1.1.0",
     "create-hmac": "^1.1.2",
     "elliptic": "^6.0.0",
-    "inherits": "^2.0.1",
+    "inherits": "2.0.3",
     "parse-asn1": "^5.0.0"
   },
   "devDependencies": {
-    "tap-spec": "^1.0.1",
-    "tape": "^3.0.3",
-    "standard": "^5.0.0"
+    "tap-spec": "^5.0.0",
+    "tape": "~4.9.1",
+    "standard": "^12.0.1"
   }
 }
