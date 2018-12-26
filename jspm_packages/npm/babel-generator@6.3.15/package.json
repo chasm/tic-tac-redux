@@ -12,13 +12,13 @@
   ],
   "dependencies": {
     "babel-messages": "^6.3.13",
-    "babel-runtime": "^5.0.0",
+    "babel-runtime": "^6.26.0",
     "babel-types": "^6.3.14",
-    "detect-indent": "^3.0.1",
+    "detect-indent": "^5.0.0",
     "is-integer": "^1.0.4",
-    "lodash": "^3.10.1",
-    "repeating": "^1.1.3",
-    "source-map": "^0.5.0",
+    "lodash": "^4.17.11",
+    "repeating": "^3.0.0",
+    "source-map": "0.7.3",
     "trim-right": "^1.0.1"
   },
   "devDependencies": {
