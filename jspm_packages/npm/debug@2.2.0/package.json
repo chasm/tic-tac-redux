@@ -17,11 +17,11 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "ms": "0.7.1"
+    "ms": "2.1.1"
   },
   "devDependencies": {
-    "browserify": "9.0.3",
-    "mocha": "*"
+    "browserify": "~16.2.3",
+    "mocha": "5.2.0"
   },
   "main": "./node.js",
   "browser": "./browser.js",
