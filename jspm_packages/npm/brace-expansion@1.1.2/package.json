@@ -13,11 +13,11 @@
     "gentest": "bash test/generate.sh"
   },
   "dependencies": {
-    "balanced-match": "^0.3.0",
+    "balanced-match": "^1.0.0",
     "concat-map": "0.0.1"
   },
   "devDependencies": {
-    "tape": "4.2.2"
+    "tape": "~4.9.1"
   },
   "keywords": [],
   "author": {
