@@ -1,5 +1,7 @@
 # Tic-Tac-Redux
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/chasm/tic-tac-redux.svg)](https://greenkeeper.io/)
+
 We'll start with our app from last class, which can be found at [https://github.com/chasm/tic-tac-react](https://github.com/chasm/tic-tac-react). Be sure to clone a copy to use as the base from which to build today's application.
 
 If, after you've cloned it, you'd like to make the repo your own, just delete the `.git` folder, then run `git init` to start your own repo:
