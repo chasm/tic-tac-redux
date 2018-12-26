@@ -28,7 +28,7 @@
     "randombytes": "^2.0.1"
   },
   "devDependencies": {
-    "tape": "^3.0.3",
-    "tap-spec": "^2.1.2"
+    "tape": "~4.9.1",
+    "tap-spec": "^5.0.0"
   }
 }
