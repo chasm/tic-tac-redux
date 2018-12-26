@@ -34,6 +34,6 @@
     "path"
   ],
   "devDependencies": {
-    "ava": "0.0.3"
+    "ava": "1.0.1"
   }
 }
