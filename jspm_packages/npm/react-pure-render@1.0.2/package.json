@@ -26,8 +26,8 @@
   },
   "homepage": "https://github.com/gaearon/react-pure-render",
   "devDependencies": {
-    "babel": "^5.2.9",
-    "babel-eslint": "^3.0.1",
-    "eslint": "^0.20.0"
+    "babel": "^6.23.0",
+    "babel-eslint": "^10.0.1",
+    "eslint": "^5.11.0"
   }
 }
