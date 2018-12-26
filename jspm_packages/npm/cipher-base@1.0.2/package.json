@@ -21,10 +21,10 @@
   },
   "homepage": "https://github.com/crypto-browserify/cipher-base#readme",
   "dependencies": {
-    "inherits": "^2.0.1"
+    "inherits": "2.0.3"
   },
   "devDependencies": {
-    "tap-spec": "^4.1.0",
-    "tape": "^4.2.0"
+    "tap-spec": "^5.0.0",
+    "tape": "~4.9.1"
   }
 }
