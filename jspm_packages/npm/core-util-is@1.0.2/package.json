@@ -27,6 +27,6 @@
     "test": "tap test.js"
   },
   "devDependencies": {
-    "tap": "^2.3.0"
+    "tap": "~12.1.1"
   }
 }
